@@ -6375,6 +6375,7 @@
         // ==========================================
         
         let archivesData = []; // Store archives data for gallery viewing
+        let archivesHideDetails = false; // Temporary toggle: hide name/city/gallery on cards
         
         async function loadHomeContent() {
             // Use cached data if already fetched
@@ -6419,21 +6420,25 @@
                 return;
             }
             
+            const hideDetails = archivesHideDetails;
             grid.innerHTML = entries.map((entry, index) => {
                 const hasGallery = entry.galleryImages && entry.galleryImages.length > 0;
+                const clickable = hasGallery && !hideDetails;
                 return `
-                <div class="gallery-item ${hasGallery ? 'has-gallery' : ''}" data-aos="fade-up" data-aos-delay="${(index + 1) * 100}" ${hasGallery ? `onclick="openGalleryLightbox('${entry._id}')"` : ''}>
-                    ${hasGallery ? `
+                <div class="gallery-item ${clickable ? 'has-gallery' : ''}" data-aos="fade-up" data-aos-delay="${(index + 1) * 100}" ${clickable ? `onclick="openGalleryLightbox('${entry._id}')"` : ''}>
+                    ${clickable ? `
                     <div class="gallery-view-indicator">
                         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 010-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
                         <span>View Gallery</span>
                     </div>
                     ` : ''}
                     <img src="${entry.coverImageUrl}" alt="${entry.coupleName}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1519741497674-611481863552?w=800&h=600&fit=crop'">
+                    ${hideDetails ? '' : `
                     <div class="gallery-overlay">
                         <h4>${entry.coupleName}</h4>
                         <span>${entry.weddingPlace}</span>
                     </div>
+                    `}
                 </div>
             `}).join('');
             
@@ -7604,6 +7609,7 @@
         // Apply archives content from pre-fetched data
         function applyArchivesContent(data) {
             try {
+                archivesHideDetails = !!(data.archives && data.archives.hideDetails);
                 if (data.archives && data.archives.entries) {
                     archivesData = data.archives.entries;
                     renderArchivesGrid(archivesData);
